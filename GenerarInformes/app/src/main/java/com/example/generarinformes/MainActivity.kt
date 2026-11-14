@@ -31,8 +31,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtSalarioTotal: TextView
     private lateinit var txtSalarioMedio: TextView
     private lateinit var txtSalarioMaximo: TextView
-
     private lateinit var txtSalarioMinimo: TextView
+    private lateinit var txtConclusion: TextView
 
     private lateinit var pbValencia: ProgressBar
     private lateinit var pbMadrid: ProgressBar
@@ -62,6 +62,7 @@ class MainActivity : AppCompatActivity() {
         txtSalarioMedio = findViewById(R.id.txtSalarioMedio)
         txtSalarioMaximo = findViewById(R.id.txtSalarioMaximo)
         txtSalarioMinimo = findViewById(R.id.txtSalarioMinimo)
+        txtConclusion = findViewById(R.id.txtConclusion)
 
         pbValencia = findViewById(R.id.pbValencia)
         pbMadrid = findViewById(R.id.pbMadrid)
@@ -181,12 +182,24 @@ class MainActivity : AppCompatActivity() {
             it.salario
         } ?: 0
 
+        val mejorOferta = ofertasFiltradas.maxByOrNull {
+            it.salario
+        }
+
         txtCiudadSeleccionada.text = "Ciudad seleccionada: $ciudad"
         txtNumeroOfertas.text = "Número de ofertas: $numeroOfertas"
         txtSalarioTotal.text = "Salario total: ${formatearSalario(salarioTotal)}"
         txtSalarioMedio.text = "Salario medio: ${formatearSalario(salarioMedio.toInt())}"
         txtSalarioMaximo.text = "Salario máximo: ${formatearSalario(salarioMaximo)}"
         txtSalarioMinimo.text = "Salario mínimo: ${formatearSalario(salarioMinimo)}"
+        if (mejorOferta != null) {
+            txtConclusion.text =
+                "Conclusión: La oferta mejor pagada es " +
+                        "${mejorOferta.puesto}, de ${mejorOferta.empresa}, " +
+                        "con un salario de ${formatearSalario(mejorOferta.salario)}."
+        } else {
+            txtConclusion.text = "Conclusión: No hay ofertas disponibles."
+        }
 
         mostrarGrafico(ofertasFiltradas)
 
