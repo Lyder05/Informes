@@ -32,6 +32,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtSalarioMedio: TextView
     private lateinit var txtSalarioMaximo: TextView
 
+    private lateinit var txtSalarioMinimo: TextView
+
     private lateinit var pbValencia: ProgressBar
     private lateinit var pbMadrid: ProgressBar
     private lateinit var pbAlicante: ProgressBar
@@ -59,6 +61,7 @@ class MainActivity : AppCompatActivity() {
         txtSalarioTotal = findViewById(R.id.txtSalarioTotal)
         txtSalarioMedio = findViewById(R.id.txtSalarioMedio)
         txtSalarioMaximo = findViewById(R.id.txtSalarioMaximo)
+        txtSalarioMinimo = findViewById(R.id.txtSalarioMinimo)
 
         pbValencia = findViewById(R.id.pbValencia)
         pbMadrid = findViewById(R.id.pbMadrid)
@@ -174,11 +177,16 @@ class MainActivity : AppCompatActivity() {
             it.salario
         } ?: 0
 
+        val salarioMinimo = ofertasFiltradas.minOfOrNull {
+            it.salario
+        } ?: 0
+
         txtCiudadSeleccionada.text = "Ciudad seleccionada: $ciudad"
         txtNumeroOfertas.text = "Número de ofertas: $numeroOfertas"
         txtSalarioTotal.text = "Salario total: ${formatearSalario(salarioTotal)}"
         txtSalarioMedio.text = "Salario medio: ${formatearSalario(salarioMedio.toInt())}"
         txtSalarioMaximo.text = "Salario máximo: ${formatearSalario(salarioMaximo)}"
+        txtSalarioMinimo.text = "Salario mínimo: ${formatearSalario(salarioMinimo)}"
 
         mostrarGrafico(ofertasFiltradas)
 
