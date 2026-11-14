@@ -9,6 +9,13 @@ import android.widget.Spinner
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import org.json.JSONArray
+import android.content.Intent
+import android.graphics.Color
+import android.graphics.Paint
+import android.graphics.pdf.PdfDocument
+import android.net.Uri
+import android.widget.Toast
+import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +40,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var txtCantidadMadrid: TextView
     private lateinit var txtCantidadAlicante: TextView
 
+    private val codigoCrearPdf = 100
     private val ofertas = ArrayList<Oferta>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +79,19 @@ class MainActivity : AppCompatActivity() {
             val ofertasFiltradas = filtrarOfertasPorCiudad(ciudadSeleccionada)
 
             mostrarResultado(ciudadSeleccionada, ofertasFiltradas)
+        }
+
+        btnExportarPdf.setOnClickListener {
+
+            val ciudadSeleccionada = spCiudad.selectedItem.toString()
+
+            val ofertasFiltradas = filtrarOfertasPorCiudad(ciudadSeleccionada)
+
+            mostrarResultado(ciudadSeleccionada, ofertasFiltradas)
+
+            llInforme.post {
+                abrirSelectorParaGuardarPdf()
+            }
         }
 
     }
@@ -216,6 +237,128 @@ class MainActivity : AppCompatActivity() {
         txtCantidadMadrid.text = ofertasMadrid.toString()
         txtCantidadAlicante.text = ofertasAlicante.toString()
     }
+
+    private fun abrirSelectorParaGuardarPdf() {
+
+        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
+
+        intent.addCategory(Intent.CATEGORY_OPENABLE)
+        intent.type = "application/pdf"
+
+        intent.putExtra(
+            Intent.EXTRA_TITLE,
+            "informe_ofertas.pdf"
+        )
+
+        startActivityForResult(intent, codigoCrearPdf)
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?
+    ) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == codigoCrearPdf && resultCode == RESULT_OK) {
+
+            val uriPdf = data?.data
+
+            if (uriPdf != null) {
+                exportarInformePdf(uriPdf)
+            }
+        }
+    }
+
+
+
+    private fun exportarInformePdf(uriPdf: Uri) {
+
+        val documentoPdf = PdfDocument()
+
+        val pagina = PdfDocument.PageInfo.Builder(
+            595,
+            842,
+            1
+        ).create()
+
+        val paginaPdf = documentoPdf.startPage(pagina)
+        val canvas = paginaPdf.canvas
+
+        val pinturaTitulo = Paint()
+        pinturaTitulo.color = Color.BLACK
+        pinturaTitulo.textSize = 24f
+        pinturaTitulo.isFakeBoldText = true
+
+        canvas.drawColor(Color.WHITE)
+
+        canvas.drawText(
+            "Informe de ofertas",
+            32f,
+            48f,
+            pinturaTitulo
+        )
+
+        val anchoDisponible = 531f
+        val altoDisponible = 760f
+
+        val anchoInforme = llInforme.width
+        val altoInforme = llInforme.height
+
+        if (anchoInforme > 0 && altoInforme > 0) {
+
+            val escala = min(
+                anchoDisponible / anchoInforme,
+                altoDisponible / altoInforme
+            )
+
+            canvas.save()
+            canvas.translate(32f, 72f)
+            canvas.scale(escala, escala)
+
+            llInforme.draw(canvas)
+
+            canvas.restore()
+        }
+
+        documentoPdf.finishPage(paginaPdf)
+
+        try {
+            val salida = contentResolver.openOutputStream(uriPdf)
+
+            if (salida != null) {
+
+                salida.use {
+                    documentoPdf.writeTo(it)
+                }
+
+                Toast.makeText(
+                    this,
+                    "PDF guardado",
+                    Toast.LENGTH_LONG
+                ).show()
+
+            } else {
+                Toast.makeText(
+                    this,
+                    "No se pudo guardar el PDF",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+        } catch (e: Exception) {
+
+            Toast.makeText(
+                this,
+                "No se pudo guardar el PDF",
+                Toast.LENGTH_LONG
+            ).show()
+
+        } finally {
+            documentoPdf.close()
+        }
+    }
+
 
 
 }
