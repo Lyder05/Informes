@@ -259,7 +259,12 @@ class MainActivity : AppCompatActivity() {
         txtCantidadAlicante.text = ofertasAlicante.toString()
     }
 
+
     private fun abrirSelectorParaGuardarPdf() {
+
+        val ciudadSeleccionada = spCiudad.selectedItem.toString()
+
+        val nombreArchivo = "informe_${ciudadSeleccionada}.pdf"
 
         val intent = Intent(Intent.ACTION_CREATE_DOCUMENT)
 
@@ -268,11 +273,12 @@ class MainActivity : AppCompatActivity() {
 
         intent.putExtra(
             Intent.EXTRA_TITLE,
-            "informe_ofertas.pdf"
+            nombreArchivo
         )
 
         startActivityForResult(intent, codigoCrearPdf)
     }
+
 
     override fun onActivityResult(
         requestCode: Int,
